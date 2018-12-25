@@ -6,11 +6,11 @@ void update_position() {
 
   const delta_ticks_t dsl = left_ticks_copy - last_left_ticks;
   const delta_ticks_t dsr = right_ticks_copy - last_right_ticks;
-  
+
   const xy_t s = (xy_t)(dsl + dsr) / 2;
   x += s * lookup_cos(theta);
   y += s * lookup_sin(theta);
-  
+
   theta += (theta_t)(dsl - dsr) / track_length;
   while(theta > TWO_PI) theta -= TWO_PI;
   while(theta < 0)      theta += TWO_PI;
