@@ -6004,15 +6004,19 @@ const PROGMEM float sin_table[] = {0.0,
 0.9999999657305405,
 1.0};
   float lookup_sin(theta_t t) {
-    if(t < 0) return -lookup_sin(-t);
-    if(t <= HALF_PI) return pgm_read_float(sin_table + round(t * 3819.7186342054883));
-    if(t <= PI) return lookup_sin(PI - t);
-    if(t <= 3*HALF_PI) return -lookup_sin(t - PI);
-    if(t <= TWO_PI) return -lookup_sin(TWO_PI - t);
+    if(t <= HALF_PI) return pgm_read_float(sin_table + round((t) * 3819.7186342054883));
+    if(t <= PI) return pgm_read_float(sin_table + round((PI - t) * 3819.7186342054883));
+    if(t <= 3*HALF_PI) return -pgm_read_float(sin_table + round((t - PI) * 3819.7186342054883));
+    if(t <= TWO_PI) return -pgm_read_float(sin_table + round((TWO_PI - t) * 3819.7186342054883));
 
     return 0;
   }
 
   float lookup_cos(theta_t t) {
-    return lookup_sin(HALF_PI - t);
+    if(t <= HALF_PI) return pgm_read_float(sin_table + round((HALF_PI - t) * 3819.7186342054883));
+    if(t <= PI) return -pgm_read_float(sin_table + round((t - HALF_PI) * 3819.7186342054883));
+    if(t <= 3*HALF_PI) return -pgm_read_float(sin_table + round((3*HALF_PI - t) * 3819.7186342054883));
+    if(t <= TWO_PI) return pgm_read_float(sin_table + round((t - 3*HALF_PI) * 3819.7186342054883));
+
+    return 0;
   }

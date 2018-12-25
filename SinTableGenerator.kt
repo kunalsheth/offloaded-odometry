@@ -35,19 +35,24 @@ fun main() {
     )
   )
 
+  fun q1SinLookUp(theta: String) = "pgm_read_float($table + round(($theta) * $lookupFactor))"
   writer.println("""
   $trig_t $sinf($theta_t t) {
-    if(t < 0) return -$sinf(-t);
-    if(t <= $oneHalfPi) return pgm_read_float($table + round(t * $lookupFactor));
-    if(t <= $pi) return $sinf($pi - t);
-    if(t <= $threeHalfPi) return -$sinf(t - $pi);
-    if(t <= $twoPi) return -$sinf($twoPi - t);
+    if(t <= $oneHalfPi) return ${q1SinLookUp("t")};
+    if(t <= $pi) return ${q1SinLookUp("$pi - t")};
+    if(t <= $threeHalfPi) return -${q1SinLookUp("t - $pi")};
+    if(t <= $twoPi) return -${q1SinLookUp("$twoPi - t")};
 
     return 0;
   }
 
   $trig_t $cosf($theta_t t) {
-    return $sinf($oneHalfPi - t);
+    if(t <= $oneHalfPi) return ${q1SinLookUp("$oneHalfPi - t")};
+    if(t <= $pi) return -${q1SinLookUp("t - $oneHalfPi")};
+    if(t <= $threeHalfPi) return -${q1SinLookUp("$threeHalfPi - t")};
+    if(t <= $twoPi) return ${q1SinLookUp("t - $threeHalfPi")};
+
+    return 0;
   }"""
   .trimMargin())
   writer.close()
