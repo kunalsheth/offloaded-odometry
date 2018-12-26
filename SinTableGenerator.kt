@@ -3,57 +3,99 @@ import kotlin.math.sin
 import java.io.File
 
 fun main() {
-  println("SIN(X) Table Resolution:")
-  val numEntries = readLine()!!.toInt()
+    //#define fxpt_shift 15
+    val fxpt_shift = 15
+    //#define fxpt(X) ((fxpt_t)(X * (1 << fxpt_shift)))
+    fun fxpt(x: Double): Long = (x * (1L shl fxpt_shift)).toLong()
+    //#define unfxpt(X) ((float)X / (1 << fxpt_shift))
+    fun unfxpt(x: Long): Double = x.toDouble() / (1L shl fxpt_shift)
 
-  val lookupFactor = numEntries / (PI/2)
+    println("Step Value:")
+    val stepValue = readLine()!!.toLong()
 
-  val oneHalfPi = "HALF_PI"
-  val pi = "PI"
-  val threeHalfPi = "3*HALF_PI"
-  val twoPi = "TWO_PI"
+    val oneHalfPi = "fxpt_half_pi"
+    val pi = "fxpt_pi"
+    val threeHalfPi = "fxpt_three_half_pi"
+    val twoPi = "fxpt_two_pi"
 
-  val trig_t = "float"
-  val theta_t = "theta_t"
-  val sinf = "lookup_sin"
-  val cosf = "lookup_cos"
-  val table = "sin_table"
+    val trig_t = "int16_t"
+    val dest = "dest"
+    val theta_t = "theta_t"
+    val sinf = "lookup_sin"
+    val cosf = "lookup_cos"
+    val table = "sin_table"
 
-  val writer = File("sin.ino").printWriter()
+    // memcpy_P (void *dest, uint_farptr_t src, size_t len)
+    fun q1SinLookUp(theta: String) = "memcpy_P(&$dest, &$table[($theta) / $stepValue], sizeof($trig_t))"
 
-  writer.println("""
+    val writer = File("sin.ino").printWriter()
+
+    writer.println("""
+    #include "fxpt.h"
+
     // DO NOT EDIT. THIS FILE IS AUTO GENERATED:
     // kotlinc SinTableGenerator.kt; kotlin SinTableGeneratorKt
-    """);
 
-  writer.println(
-    DoubleArray(numEntries+1) { sin(it / lookupFactor) }
-    .joinToString(
-      prefix = "const PROGMEM $trig_t $table[] = {",
-      separator = ",\n",
-      postfix = "};"
-    )
-  )
+    const PROGMEM $trig_t $table[] = {
+    """.trimIndent());
 
-  fun q1SinLookUp(theta: String) = "pgm_read_float($table + round(($theta) * $lookupFactor))"
-  writer.println("""
-  $trig_t $sinf($theta_t t) {
-    if(t <= $oneHalfPi) return ${q1SinLookUp("t")};
-    if(t <= $pi) return ${q1SinLookUp("$pi - t")};
-    if(t <= $threeHalfPi) return -${q1SinLookUp("t - $pi")};
-    if(t <= $twoPi) return -${q1SinLookUp("$twoPi - t")};
+    var count = 0;
+    (0L until Long.MAX_VALUE step stepValue)
+            .takeWhile { it <= fxpt(PI / 2) + stepValue }
+            .map { fxpt(sin(unfxpt(it))) }
+            .onEach { count++ }
+            .joinToString()
+            .also { writer.println(it) }
+    println("Generated $count values.")
 
-    return 0;
-  }
+    writer.println("""
+    };
 
-  $trig_t $cosf($theta_t t) {
-    if(t <= $oneHalfPi) return ${q1SinLookUp("$oneHalfPi - t")};
-    if(t <= $pi) return -${q1SinLookUp("t - $oneHalfPi")};
-    if(t <= $threeHalfPi) return -${q1SinLookUp("$threeHalfPi - t")};
-    if(t <= $twoPi) return ${q1SinLookUp("t - $threeHalfPi")};
+    $trig_t $sinf($theta_t t) {
+        $trig_t $dest = 0;
 
-    return 0;
-  }"""
-  .trimMargin())
-  writer.close()
+        if(t <= $oneHalfPi) {
+            ${q1SinLookUp("t")};
+            return $dest;
+        }
+        else if(t <= $pi) {
+            ${q1SinLookUp("$pi - t")};
+            return $dest;
+        }
+        else if(t <= $threeHalfPi) {
+            ${q1SinLookUp("t - $pi")};
+            return -$dest;
+        }
+        else if(t <= $twoPi) {
+            ${q1SinLookUp("$twoPi - t")};
+            return -$dest;
+        }
+
+        return 0;
+    }
+
+    $trig_t $cosf($theta_t t) {
+        $trig_t $dest = 0;
+
+        if(t <= $oneHalfPi) {
+            ${q1SinLookUp("$oneHalfPi - t")};
+            return $dest;
+        }
+        else if(t <= $pi) {
+            ${q1SinLookUp("t - $oneHalfPi")};
+            return -$dest;
+        }
+        else if(t <= $threeHalfPi) {
+            ${q1SinLookUp("$threeHalfPi - t")};
+            return -$dest;
+        }
+        else if(t <= $twoPi) {
+            ${q1SinLookUp("t - $threeHalfPi")};
+            return $dest;
+        }
+
+        return 0;
+    }""".trimIndent())
+
+    writer.close()
 }

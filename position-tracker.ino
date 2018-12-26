@@ -6,8 +6,10 @@ void exit_error_state() {
   digitalWrite(led_pin, LOW);
 }
 
-#define theta_t double
-#define xy_t double
+#include "fxpt.h"
+#define theta_t fxpt_t
+#define xy_t fxpt_t
+
 #define ticks_t int64_t
 #define delta_ticks_t int16_t
 #define time_t uint64_t
