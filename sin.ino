@@ -11,43 +11,33 @@ int16_t lookup_sin(theta_t t) {
     int16_t dest = 0;
 
     if(t <= fxpt_half_pi) {
-        memcpy_P(&dest, &sin_table[(t) / 10], sizeof(int16_t));
-        return dest;
+        return pgm_read_dword(&sin_table[(t) / 10]);
     }
     else if(t <= fxpt_pi) {
-        memcpy_P(&dest, &sin_table[(fxpt_pi - t) / 10], sizeof(int16_t));
-        return dest;
+        return pgm_read_dword(&sin_table[(fxpt_pi - t) / 10]);
     }
     else if(t <= fxpt_three_half_pi) {
-        memcpy_P(&dest, &sin_table[(t - fxpt_pi) / 10], sizeof(int16_t));
-        return -dest;
+        return -pgm_read_dword(&sin_table[(t - fxpt_pi) / 10]);
     }
     else if(t <= fxpt_two_pi) {
-        memcpy_P(&dest, &sin_table[(fxpt_two_pi - t) / 10], sizeof(int16_t));
-        return -dest;
+        return -pgm_read_dword(&sin_table[(fxpt_two_pi - t) / 10]);
     }
 
     return 0;
 }
 
 int16_t lookup_cos(theta_t t) {
-    int16_t dest = 0;
-
     if(t <= fxpt_half_pi) {
-        memcpy_P(&dest, &sin_table[(fxpt_half_pi - t) / 10], sizeof(int16_t));
-        return dest;
+        return pgm_read_dword(&sin_table[(fxpt_half_pi - t) / 10]);
     }
     else if(t <= fxpt_pi) {
-        memcpy_P(&dest, &sin_table[(t - fxpt_half_pi) / 10], sizeof(int16_t));
-        return -dest;
+        return -pgm_read_dword(&sin_table[(t - fxpt_half_pi) / 10]);;
     }
     else if(t <= fxpt_three_half_pi) {
-        memcpy_P(&dest, &sin_table[(fxpt_three_half_pi - t) / 10], sizeof(int16_t));
-        return -dest;
+        return -pgm_read_dword(&sin_table[(fxpt_three_half_pi - t) / 10]);
     }
     else if(t <= fxpt_two_pi) {
-        memcpy_P(&dest, &sin_table[(t - fxpt_three_half_pi) / 10], sizeof(int16_t));
-        return dest;
+        return pgm_read_dword(&sin_table[(t - fxpt_three_half_pi) / 10]);;
     }
 
     return 0;

@@ -26,7 +26,7 @@ fun main() {
     val table = "sin_table"
 
     // memcpy_P (void *dest, uint_farptr_t src, size_t len)
-    fun q1SinLookUp(theta: String) = "memcpy_P(&$dest, &$table[($theta) / $stepValue], sizeof($trig_t))"
+    fun q1SinLookUp(theta: String) = "pgm_read_dword(&$table[($theta) / $stepValue])"
 
     val writer = File("sin.ino").printWriter()
 
@@ -55,43 +55,33 @@ fun main() {
         $trig_t $dest = 0;
 
         if(t <= $oneHalfPi) {
-            ${q1SinLookUp("t")};
-            return $dest;
+            return ${q1SinLookUp("t")};
         }
         else if(t <= $pi) {
-            ${q1SinLookUp("$pi - t")};
-            return $dest;
+            return ${q1SinLookUp("$pi - t")};
         }
         else if(t <= $threeHalfPi) {
-            ${q1SinLookUp("t - $pi")};
-            return -$dest;
+            return -${q1SinLookUp("t - $pi")};
         }
         else if(t <= $twoPi) {
-            ${q1SinLookUp("$twoPi - t")};
-            return -$dest;
+            return -${q1SinLookUp("$twoPi - t")};
         }
 
         return 0;
     }
 
     $trig_t $cosf($theta_t t) {
-        $trig_t $dest = 0;
-
         if(t <= $oneHalfPi) {
-            ${q1SinLookUp("$oneHalfPi - t")};
-            return $dest;
+            return ${q1SinLookUp("$oneHalfPi - t")};
         }
         else if(t <= $pi) {
-            ${q1SinLookUp("t - $oneHalfPi")};
-            return -$dest;
+            return -${q1SinLookUp("t - $oneHalfPi")};;
         }
         else if(t <= $threeHalfPi) {
-            ${q1SinLookUp("$threeHalfPi - t")};
-            return -$dest;
+            return -${q1SinLookUp("$threeHalfPi - t")};
         }
         else if(t <= $twoPi) {
-            ${q1SinLookUp("t - $threeHalfPi")};
-            return $dest;
+            return ${q1SinLookUp("t - $threeHalfPi")};;
         }
 
         return 0;
